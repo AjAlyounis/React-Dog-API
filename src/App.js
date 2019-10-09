@@ -1,64 +1,40 @@
 import "./App.css";
 import React from "react";
-import axios from "axios";
-class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      breed: "husky",
-      images: []
-    };
-  }
-  // componet did mount will be call only one time
-  componentDidMount() {
-    this.fetchDogImages();
-  }
-  // compoent Did update is only change when the props change or state
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.breed !== this.state.breed) {
-      this.setState({
-        images: []
-      });
+import { useLocalStorage } from "./utils/input";
+import { useDogImages } from "./utils/api";
 
-      this.fetchDogImages();
-    }
-  }
+function App(props) {
+  // we're calling our custom hooks here, and passing the parameters we defined in input.js
+  const [breed, setBreed] = useLocalStorage("breed", "husky");
+  const [count, setCount] = useLocalStorage("count", 1);
+  // we don't need setImages anymore, since we never call it
+  const [images] = useDogImages(breed, count);
 
-  fetchDogImages = () => {
-    axios
-      .get(`https://dog.ceo/api/breed/${this.state.breed}/images`)
-      .then(result => {
-        this.setState({
-          images: result.data.message
-        });
-      })
-      .catch(error => {
-        console.log("error", error);
-      });
-  };
+  return (
+    <>
+      <h1>The Dog Website</h1>
 
-  handkeChange = event => {
-    this.setState({
-      breed: event.target.value
-    });
-  };
-  render() {
-    return (
-      <>
-        <h1>The dog website</h1>
-        <select value={this.state.breed} onChange={this.handkeChange}>
-          <option value="Husky">Husky</option>
-          <option value="Beagle">Beagle</option>
-          <option value="Corgi">Corgi</option>
-        </select>
+      <select value={breed} onChange={e => setBreed(e.target.value)}>
+        <option value="husky">Husky</option>
+        <option value="beagle">Beagle</option>
+        <option value="corgi">Corgi</option>
+        <option value="boxer">Boxer</option>
+      </select>
 
-        <div>
-          {this.state.images.map((image, index) => (
-            <img key={index} src={image} alt={"dog"} />
-          ))}
-        </div>
-      </>
-    );
-  }
+      <input
+        type="number"
+        placeholder="Image Count"
+        value={count}
+        onChange={e => setCount(e.target.value)}
+      />
+
+      <div>
+        {images.map((image, index) => (
+          <img key={index} src={image} alt="Dog" />
+        ))}
+      </div>
+    </>
+  );
 }
+
 export default App;
